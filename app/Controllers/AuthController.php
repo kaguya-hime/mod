@@ -96,7 +96,7 @@ class AuthController extends BaseController
         // @todo
         $time =  3600*24;
         if ($rememberMe) {
-            $time = 3600*24*7;
+            $time = 3600*24*30;
         }
 
         if ($user->ga_enable==1) {
@@ -123,6 +123,58 @@ class AuthController extends BaseController
 
         Wecenter::add($user, $passwd);
         Wecenter::Login($user, $passwd, $time);
+
+        return $response->getBody()->write(json_encode($rs));
+    }
+
+
+    public function loginHandles($request, $response, $args)
+    {
+        // $data = $request->post('sdf');
+        $email =  $request->getParam('email');
+        $email = strtolower($email);
+        $passwd = $request->getParam('passwd');
+        $rememberMe = $request->getParam('remember_me');
+        // Handle Login
+        $user = User::where('email', '=', $email)->first();
+
+        if ($user == null) {
+            $rs['ret'] = 0;
+            $rs['msg'] = "401 邮箱或者密码错误";
+            return $response->getBody()->write(json_encode($rs));
+        }
+
+        if (!Hash::checkPassword($user->pass, $passwd)) {
+            $rs['ret'] = 0;
+            $rs['msg'] = "402 邮箱或者密码错误";
+
+
+            $loginip=new LoginIp();
+            $loginip->ip=$_SERVER["REMOTE_ADDR"];
+            $loginip->userid=$user->id;
+            $loginip->datetime=time();
+            $loginip->type=1;
+            $loginip->save();
+
+            return $response->getBody()->write(json_encode($rs));
+        }
+        // @todo
+        $time =  3600*24;
+        if ($rememberMe) {
+            $time = 3600*24*30;
+        }
+
+
+        Auth::login($user->id, $time);
+        $rs['ret'] = 1;
+        $rs['msg'] = "欢迎回来";
+
+        $loginip=new LoginIp();
+        $loginip->ip=$_SERVER["REMOTE_ADDR"];
+        $loginip->userid=$user->id;
+        $loginip->datetime=time();
+        $loginip->type=0;
+        $loginip->save();
 
         return $response->getBody()->write(json_encode($rs));
     }
@@ -356,12 +408,12 @@ class AuthController extends BaseController
         $user->node_speedlimit=Config::get('user_speedlimit');
         if (Config::get('enable_invite_code')=='true') {
             $user->ref_by = $c->user_id;
-             if ($user->ref_by !=0) {
-               $user->money=Config::get('invite_get_money');
-               $gift_user=User::where("id", "=", $user->ref_by)->first();
-               $gift_user->transfer_enable=($gift_user->transfer_enable+Config::get('invite_gift')*1024*1024*1024);
-               $gift_user->save();
-             }
+            if ($user->ref_by !=0) {
+                $user->money=Config::get('invite_get_money');
+                $gift_user=User::where("id", "=", $user->ref_by)->first();
+                $gift_user->transfer_enable=($gift_user->transfer_enable+Config::get('invite_gift')*1024*1024*1024);
+                $gift_user->save();
+            }
         } else {
             $user->ref_by = 0;
         }

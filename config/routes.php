@@ -82,6 +82,8 @@ $app->get('/tos', 'App\Controllers\HomeController:tos');
 $app->get('/staff', 'App\Controllers\HomeController:staff');
 $app->get('/gfwlistjs', 'App\Controllers\LinkController:GetGfwlistJs');
 $app->post('/telegram_callback', 'App\Controllers\HomeController:telegram');
+$app->get('/jsj_callback', 'App\Controllers\HomeController:jsj_callback');
+$app->post('/jsj_callback', 'App\Controllers\HomeController:pay_callback');
 
 
 // User Center
@@ -139,6 +141,7 @@ $app->group('/user', function () {
     $this->get('/logout', 'App\Controllers\UserController:logout');
     $this->get('/code', 'App\Controllers\UserController:code');
     $this->get('/alipay', 'App\Controllers\UserController:alipay');
+    $this->get('/code/jsjapp', 'App\Controllers\UserController:jsjapp');
     $this->get('/code/pay91', 'App\Controllers\pay91');
     $this->post('/code/f2fpay', 'App\Controllers\UserController:f2fpay');
     $this->get('/code/f2fpay', 'App\Controllers\UserController:f2fpayget');
@@ -164,6 +167,7 @@ $app->group('/auth', function () {
     $this->get('/login', 'App\Controllers\AuthController:login');
     $this->get('/qrcode_check', 'App\Controllers\AuthController:qrcode_check');
     $this->post('/login', 'App\Controllers\AuthController:loginHandle');
+    $this->post('/logins', 'App\Controllers\AuthController:loginHandles');
     $this->post('/qrcode_login', 'App\Controllers\AuthController:qrcode_loginHandle');
     $this->get('/register', 'App\Controllers\AuthController:register');
     $this->post('/register', 'App\Controllers\AuthController:registerHandle');

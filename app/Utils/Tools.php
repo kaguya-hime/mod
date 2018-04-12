@@ -115,7 +115,7 @@ class Tools
     public static function genUUID()
     {
         // @TODO
-      return self::genSID();
+        return self::genSID();
     }
 
     public static function getLastPort()
@@ -286,8 +286,8 @@ class Tools
                     return $rule->id;
                 }
 
-        //递归处理这个节点
-        $maybe_rule_id = Tools::has_conflict_rule($rule, $ruleset, $edit_rule_id, $origin_node_id, $rule->user_id);
+                //递归处理这个节点
+                $maybe_rule_id = Tools::has_conflict_rule($rule, $ruleset, $edit_rule_id, $origin_node_id, $rule->user_id);
                 if ($maybe_rule_id != 0) {
                     return $maybe_rule_id;
                 }
@@ -420,7 +420,7 @@ class Tools
     {
         if($user->method == 'none' && !in_array($user->protocol, Config::getSupportParam('allow_none_protocol')))
         {
-          return false;
+            return false;
         }
 
         return true;

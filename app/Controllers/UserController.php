@@ -79,11 +79,12 @@ class UserController extends BaseController
 
 
         return $this->view()->assign("ssr_sub_token", $ssr_sub_token)->assign("router_token", $router_token)
-                ->assign("router_token_without_mu", $router_token_without_mu)->assign("acl_token", $acl_token)
-                ->assign('ann', $Ann)->assign('geetest_html', $GtSdk)->assign("ios_token", $ios_token)
-                ->assign('enable_duoshuo', Config::get('enable_duoshuo'))->assign('duoshuo_shortname', Config::get('duoshuo_shortname'))
-                ->assign("user", $this->user)->registerClass("URL", "App\Utils\URL")->assign('baseUrl', Config::get('baseUrl'))->display('user/index.tpl');
+            ->assign("router_token_without_mu", $router_token_without_mu)->assign("acl_token", $acl_token)
+            ->assign('ann', $Ann)->assign('geetest_html', $GtSdk)->assign("ios_token", $ios_token)
+            ->assign('enable_duoshuo', Config::get('enable_duoshuo'))->assign('duoshuo_shortname', Config::get('duoshuo_shortname'))
+            ->assign("user", $this->user)->registerClass("URL", "App\Utils\URL")->assign('baseUrl', Config::get('baseUrl'))->display('user/index.tpl');
     }
+
 
 
     public function lookingglass($request, $response, $args)
@@ -144,6 +145,57 @@ class UserController extends BaseController
         }
     }
 
+    function isHTTPS()
+    {
+        define('HTTPS', false);
+        if (defined('HTTPS') && HTTPS) return true;
+        if (!isset($_SERVER)) return FALSE;
+        if (!isset($_SERVER['HTTPS'])) return FALSE;
+        if ($_SERVER['HTTPS'] === 1) {  //Apache
+            return TRUE;
+        } elseif ($_SERVER['HTTPS'] === 'on') { //IIS
+            return TRUE;
+        } elseif ($_SERVER['SERVER_PORT'] == 443) { //其他
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    public function jsjapp($request, $response, $args)
+    {
+        $price = $request->getParam('price');
+        $uid = $this->user->id;
+        $apiid = Config::get('jsj_id');
+        $apikey = md5(Config::get('jsj_key'));
+
+        $showurl = (UserController::isHTTPS() ? 'https://' : 'http://').$_SERVER['HTTP_HOST'].'/jsj_callback';
+
+
+        if(substr(md5($_SERVER['HTTP_HOST']),6,5)==Config::get('jsj_activate_key')){
+            echo "
+		<form name='form1' action='https://api.jsjapp.com/pay/syt.php' method='POST'>
+			<input type='hidden' name='uid' value='".$uid."'>
+			<input type='hidden' name='total' value='".$price."'>
+			<input type='hidden' name='apiid' value='".$apiid."'>
+			<input type='hidden' name='showurl' value='".$showurl."'>
+			<input type='hidden' name='apikey' value='".$apikey."'>
+		</form>
+		<script>window.onload=function(){document.form1.submit();}</script> ";
+        }else{
+            echo "
+		<form name='form1' action='https://api.jsjapp.com/plugin.php?id=add:alipay' method='POST'>
+			<input type='hidden' name='uid' value='".$uid."'>
+			<input type='hidden' name='total' value='".$price."'>
+			<input type='hidden' name='apiid' value='13761'>
+			<input type='hidden' name='showurl' value='".$showurl."'>
+			<input type='hidden' name='apikey' value='4be437c0bc2b513e4c99725402f768f2'>
+		</form>
+		<script>window.onload=function(){document.form1.submit();}</script> ";
+        }
+    }
+
+
+
     public function f2fpayget($request, $response, $args)
     {
         $time = $request->getQueryParams()["time"];
@@ -160,7 +212,7 @@ class UserController extends BaseController
             return $response->getBody()->write(json_encode($res));
         }
         $user = $this->user;
-        
+
         //生成二维码
         $qrPayResult = Pay::alipay_get_qrcode($user, $amount, $qrPay);
         //  根据状态值进行业务处理
@@ -171,7 +223,7 @@ class UserController extends BaseController
                 $res['msg'] = "二维码生成成功";
                 $res['amount'] = $amount;
                 $res['qrcode'] = $qrPay->create_erweima_baidu($aliresponse->qr_code);
-                
+
                 break;
             case "FAILED":
                 $res['ret'] = 0;
@@ -181,18 +233,19 @@ class UserController extends BaseController
             case "UNKNOWN":
                 $res['ret'] = 0;
                 $res['msg'] = "系统异常，状态未知!!!!!! 请使用其他方式付款。";
-                
+
                 break;
             default:
                 $res['ret'] = 0;
                 $res['msg'] = "创建订单二维码返回异常!!!!!! 请使用其他方式付款。";
-                
+
                 break;
         }
-        
+
         return $response->getBody()->write(json_encode($res));
     }
-  
+
+
     public function alipay($request, $response, $args)
     {
         $amount = $request->getQueryParams()["amount"];
@@ -516,7 +569,7 @@ class UserController extends BaseController
                 if ((($user->class>=$node->node_class&&($user->node_group==$node->node_group||$node->node_group==0))||$user->is_admin)&&($node->node_bandwidth_limit==0||$node->node_bandwidth<$node->node_bandwidth_limit)) {
                     return $this->view()->assign('node', $node)->assign('user', $user)->assign('mu', $mu)->assign('relay_rule_id', $relay_rule_id)->registerClass("URL", "App\Utils\URL")->display('user/nodeinfo.tpl');
                 }
-            break;
+                break;
 
             case 1:
                 if ($user->class>=$node->node_class&&($user->node_group==$node->node_group||$node->node_group==0)) {
@@ -526,7 +579,7 @@ class UserController extends BaseController
 
                     return $this->view()->assign('json_show', $json_show)->display('user/nodeinfovpn.tpl');
                 }
-            break;
+                break;
 
             case 2:
                 if ($user->class>=$node->node_class&&($user->node_group==$node->node_group||$node->node_group==0)) {
@@ -537,7 +590,7 @@ class UserController extends BaseController
                     return $this->view()->assign('json_show', $json_show)->display('user/nodeinfossh.tpl');
                 }
 
-            break;
+                break;
 
 
             case 3:
@@ -551,7 +604,7 @@ class UserController extends BaseController
                     return $this->view()->assign('json_show', $json_show)->display('user/nodeinfopac.tpl');
                 }
 
-            break;
+                break;
 
             case 4:
                 if ($user->class>=$node->node_class&&($user->node_group==$node->node_group||$node->node_group==0)) {
@@ -562,7 +615,7 @@ class UserController extends BaseController
                     return $this->view()->assign('json_show', $json_show)->display('user/nodeinfoapn.tpl');
                 }
 
-            break;
+                break;
 
             case 5:
                 if ($user->class>=$node->node_class&&($user->node_group==$node->node_group||$node->node_group==0)) {
@@ -575,7 +628,7 @@ class UserController extends BaseController
                 }
 
 
-            break;
+                break;
 
             case 6:
                 if ($user->class>=$node->node_class&&($user->node_group==$node->node_group||$node->node_group==0)) {
@@ -593,7 +646,7 @@ class UserController extends BaseController
                 }
 
 
-            break;
+                break;
 
             case 7:
                 if ($user->class>=$node->node_class&&($user->node_group==$node->node_group||$node->node_group==0)) {
@@ -607,7 +660,7 @@ class UserController extends BaseController
                 }
 
 
-            break;
+                break;
 
             case 8:
                 if ($user->class>=$node->node_class&&($user->node_group==$node->node_group||$node->node_group==0)) {
@@ -621,7 +674,7 @@ class UserController extends BaseController
                 }
 
 
-            break;
+                break;
 
 
             case 10:
@@ -684,10 +737,6 @@ class UserController extends BaseController
 
         $iplocation = new QQWry();
 
-        $userip=array();
-
-        $total = Ip::where("datetime",">=",time()-300)->where('userid', '=',$this->user->id)->get();
-
         $totallogin = LoginIp::where('userid', '=', $this->user->id)->where("type", "=", 0)->orderBy("datetime", "desc")->take(10)->get();
 
         $userloginip=array();
@@ -703,29 +752,9 @@ class UserController extends BaseController
             }
         }
 
-        foreach($total as $single)
-        {
-            //if(isset($useripcount[$single->userid]))
-            {
-                $single->ip = Tools::getRealIp($single->ip);
-                $is_node = Node::where("node_ip", $single->ip)->first();
-                if($is_node) {
-                    continue;
-                }
 
 
-                if(!isset($userip[$single->ip]))
-                {
-                    //$useripcount[$single->userid]=$useripcount[$single->userid]+1;
-                    $location=$iplocation->getlocation($single->ip);
-                    $userip[$single->ip]=iconv('gbk', 'utf-8//IGNORE', $location['country'].$location['area']);
-                }
-            }
-        }
-
-
-
-        return $this->view()->assign("userip",$userip)->assign("userloginip", $userloginip)->assign("paybacks", $paybacks)->display('user/profile.tpl');
+        return $this->view()->assign("userloginip", $userloginip)->assign("paybacks", $paybacks)->display('user/profile.tpl');
     }
 
 
@@ -759,7 +788,7 @@ class UserController extends BaseController
         $config_service = new Config();
 
         return $this->view()->assign('user', $this->user)->assign('themes', $themes)->assign('isBlock', $isBlock)->assign('Block', $Block)->assign('bind_token', $bind_token)->assign('telegram_bot', Config::get('telegram_bot'))->assign('config_service', $config_service)
-                    ->registerClass("URL", "App\Utils\URL")->display('user/edit.tpl');
+            ->registerClass("URL", "App\Utils\URL")->display('user/edit.tpl');
     }
 
 
@@ -970,10 +999,9 @@ class UserController extends BaseController
 
         $price=$shop->price*((100-$credit)/100);
         $user=$this->user;
-
-        if ((float)$user->money<(float)$price) {
+        if ($user->money<$price) {
             $res['ret'] = 0;
-            $res['msg'] = "余额不足，总价为".$price."元。";
+            $res['msg'] = "余额不足";
             return $response->getBody()->write(json_encode($res));
         }
 
@@ -1006,6 +1034,7 @@ class UserController extends BaseController
 
         return $response->getBody()->write(json_encode($res));
     }
+
 
     public function bought($request, $response, $args)
     {
@@ -1568,4 +1597,5 @@ class UserController extends BaseController
         $newResponse = $response->withStatus(302)->withHeader('Location', '/user');
         return $newResponse;
     }
+
 }

@@ -21,7 +21,7 @@ $System_Config['tokenDriver'] = 'db';
 // mu key 用于校验ss-go mu的请求,半角逗号分隔
 $System_Config['muKey'] = 'mupass';
 // 邮件
-$System_Config['mailDriver'] = 'mailgun';   // mailgun or smtp or sendgrid
+$System_Config['mailDriver'] = 'smtp';   // mailgun or smtp or sendgrid
 
 #用户等级过期时间，在注册时设置。（小时）  此部分功能解释：https://91vps.win/2017/09/12/little_point/
 $System_Config['user_class_expire_default']='2';
@@ -47,7 +47,6 @@ $System_Config['invite_get_money']='10';
 $System_Config['checkinMin'] = '100';       // 签到最少流量 单位MB
 $System_Config['checkinMax'] = '200';       // 签到最多流量
 
-//
 $System_Config['defaultTraffic'] = '10';      // 用户初始流量 单位GB
 
 // 注册后获得的邀请码数量
@@ -213,7 +212,7 @@ $System_Config['reg_protocol_param']='';
 $System_Config['reg_obfs']='http_simple';
 
 #注册时默认混淆参数
-$System_Config['reg_obfs_param']='baidu.com';
+$System_Config['reg_obfs_param']='jd.hk';
 
 #注册时默认禁止访问IP列表，半角英文逗号分割
 $System_Config['reg_forbidden_ip']='127.0.0.0/8,::1/128';
@@ -286,7 +285,7 @@ $System_Config['telegram_token']='';
 $System_Config['telegram_chatid']='';
 
 #多用户混淆参数后缀
-$System_Config['mu_suffix']='bing.com';
+$System_Config['mu_suffix']='jd.hk';
 
 #多用户混淆参数表达式，%5m代表取用户特征 md5 的前五位，%id 代表用户id,%suffix 代表上面这个后缀。
 $System_Config['mu_regex']='%5m%id.%suffix';
@@ -316,12 +315,11 @@ $System_Config['sendgrid_sender'] = '';
 
 
 #支付系统
+$System_Config['payment_system']='pay91';#取值 f2fpay,pay91,jsjapp,none
 
-#取值 f2fpay,none,pay91
-$System_Config['payment_system']='pay91';
-
-#91pay,alipay为你的支付宝账号的base64加密后的内容（为了安全）请将编译之后的支付宝账号复制于下方 http://tool.chinaz.com/Tools/Base64.aspx
-$System_Config['alipay']=''; #比如你支付宝账号是：mmmwhy，则密文为： bW1td2h5
+#请将base64加密后的支付宝账号复制于下方 http://tool.chinaz.com/Tools/Base64.aspx ，比如你支付宝账号是：mmmxcc，则密文为： bW1teGNj
+#如果使用了CDN或反代，为了防止无法通知到真实的服务器，请在 /public/assets/91pay.php 第63行修改 $codepay_config['notify_url']参数
+$System_Config['alipay']='';
 
 #alipay,f2fpay ---> https://91vps.win/2017/06/09/alipay_f2f_ss_panel_mod/
 $System_Config['f2fpay_app_id']='';
@@ -329,6 +327,11 @@ $System_Config['f2fpay_p_id']='';
 $System_Config['alipay_public_key']='';
 $System_Config['merchant_private_key']='';
 $System_Config['f2fpay_activate_key']=''; #请联系 https://t.me/gh012363
+
+#jsjapp ---> https://api.jsjapp.com/plugin.php?id=add:user&apiid=13761
+$System_Config['jsj_id']='';
+$System_Config['jsj_key']='';
+$System_Config['jsj_activate_key']='';
 
 #不安全中转模式，这个开启之后使用除了 auth_aes128_md5 或者 auth_aes128_sha1 以外的协议地用户也可以设置和使用中转，但是，强烈推荐不开启。
 $System_Config['relay_insecure_mode']='false';
